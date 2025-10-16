@@ -1,0 +1,135 @@
+openapi: 3.0.3
+info:
+  description: This API receives hair data from hair salons around the world
+  version: "1.0.0"
+  title: Hair Salon API
+  contact:
+    email: hlam101@my.bcit.ca
+paths:
+  /hair/volume:
+    post:
+      summary: Reports a batch of hair volume readings
+      operationId: app.report_hair_volume_readings
+      description: Adds a batch of hair volume readings
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/HairVolumeReadingBatch'
+      responses:
+        '201':
+          description: batch successfully received
+        '400':
+          description: 'invalid input, object invalid'
+    
+  /hair/type:
+    post:
+      summary: Reports a batch of hair type readings
+      operationId: app.report_hair_type_readings
+      description: Adds a batch of hair type readings
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/HairTypeReadingBatch'
+      responses:
+        '201':
+          description: batch successfully received
+        '400':
+          description: 'invalid input, object invalid'
+
+components:
+  schemas:
+    HairVolumeReadingBatch:
+      required:
+        - salon_id
+        - salon_name
+        - reporting_timestamp
+        - readings
+      properties:
+        salon_id:
+          type: string
+          format: uuid
+          example: "a938-h38hs-29nlaq1-r48n17nd-3810"
+        salon_name:
+          type: string
+          example: "Studio D Hair Salon and Barbershop"
+        reporting_timestamp:
+          type: string
+          example: "2025-09-04 21:12:33"
+        readings:
+          type: array
+          items:
+            $ref: "#/components/schemas/HairVolumeReading"
+          example: [{ hair_volume: 10.56, disposal_method: "garbage", recorded_timestamp: "2025-08-29 09:12:33" }]
+      type: object
+
+    HairVolumeReading:
+      required:
+        - hair_volume
+        - disposal_method
+        - recorded_timestamp
+      properties:
+            hair_volume:
+              type: number
+              description: Volume of hair cut (in grams)
+              example: 10.56
+            disposal_method:
+              type: string
+              description: How the hair was disposed of. Repurposing hair is considered "recycling". Disposal method of "compost" also includes the breaking down of hair at a facility to turn into fertilizer
+              enum:
+                - "garbage"
+                - "recycling"
+                - "compost"
+                - "other"
+            recorded_timestamp:
+              type: string
+              example: "2025-08-29 09:12:33"
+      type: object
+
+    HairTypeReadingBatch:
+      required:
+        - salon_id
+        - salon_name
+        - reporting_timestamp
+        - readings
+      properties:
+        salon_id:
+          type: string
+          format: uuid
+          example: "a938-h38hs-29nlaq1-r48n17nd-3810"
+        salon_name:
+          type: string
+          example: "Studio D Hair Salon and Barbershop"
+        reporting_timestamp:
+          type: string
+          example: "2025-09-04 21:12:33"
+        readings:
+          type: array
+          items:
+            $ref: '#/components/schemas/HairTypeReading'
+          example: [{ hair_colour: "blonde", hair_texture: "1c", hair_thickness: 20, recorded_timestamp: "2025-08-29 09:12:33" }]
+      type: object
+
+    HairTypeReading:
+      required:
+        - hair_colour
+        - hair_texture
+        - hair_thickness
+        - recorded_timestamp
+      properties:
+        hair_colour:
+          type: string
+          example: "blonde"
+        hair_texture:
+          type: string
+          description: hair texture/curliness based on this chart - https://www.onychair.com/wp-content/uploads/Different-Types-of-Hair-Type-Natural-Hair-Texture-Chart-Curl-Pattern-ONYC-Hair.webp
+          example: "1c"
+        hair_thickness:
+          type: number
+          example: 20
+          description: hair thickness in micrometers - generally between 17-250
+        recorded_timestamp:
+          type: string
+          example: "2025-08-29 09:12:33"
+      type: object

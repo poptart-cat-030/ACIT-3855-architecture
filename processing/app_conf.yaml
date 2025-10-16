@@ -1,0 +1,10 @@
+version: 1
+datastore:
+  filename: data.json
+scheduler:
+  interval: 5
+eventstores:
+  volume:
+    url: http://localhost:8090/hair/volume
+  type:
+    url: http://localhost:8090/hair/type

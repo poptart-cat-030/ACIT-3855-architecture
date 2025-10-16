@@ -1,0 +1,59 @@
+openapi: 3.0.3
+info:
+  description: This API receives hair data from hair salons around North America
+  version: "1.0.0"
+  title: Hair Salon API
+  contact:
+    email: hlam101@my.bcit.ca
+
+paths:
+  /stats:
+    get:
+      summary: Gets the event stats
+      operationId: app.get_stats
+      description: Gets hair Volume and Type statistics
+      responses:
+        '200':
+          description: Successfully returned a stats object
+          content:
+            application/json:
+              schema:
+                type: object
+                items:
+                  $ref: '#/components/schemas/ReadingStats'
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+
+components:
+  schemas:
+    ReadingStats:
+      required:
+      - num_vol_readings
+      - min_vol_grams
+      - max_vol_grams
+      - num_type_readings
+      - max_type_thickness
+      properties:
+        num_vol_readings:
+          type: integer
+          example: 500000
+        min_vol_grams:
+          type: integer
+          example: 0.01
+        max_vol_grams:
+          type: integer
+          example: 200
+        num_type_readings:
+          type: integer
+          example: 500000
+        max_type_thickness:
+          type: integer
+          example: 250
+      type: object

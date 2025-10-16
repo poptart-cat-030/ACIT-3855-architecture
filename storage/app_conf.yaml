@@ -1,0 +1,11 @@
+version: 1
+datastore:
+  user: hlam
+  password: password
+  hostname: localhost
+  port: 3307
+  db: storage
+events:
+  hostname: localhost
+  port: 9092
+  topic: events
