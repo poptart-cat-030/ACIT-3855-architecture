@@ -8,32 +8,25 @@ info:
 paths:
   /hair/volume:
     get:
-      summary: gets new hair volume readings
-      operationId: app.get_hair_volume_readings
-      description: Returns hair volume readings whose date_created value falls within the specified timestamps
+      summary: gets a hair volume reading from history
+      operationId: app.get_hair_volume_reading
+      description: Gets hair volume readings from the event store
       parameters:
-        - name: start_timestamp
+        - name: index
           in: query
-          description: Start of the timespan
+          description: Gets the hair volume reading at the index in the event store
           schema:
-            type: string
-            example: "2025-09-04 21:12:33"
-        - name: end_timestamp
-          in: query
-          description: End of the timespan
-          schema:
-            type: string
-            example: "2025-09-04 22:12:33"
+            type: integer
+            example: 100
       responses:
         '200':
-          description: Successfully returned a list of hair volume readings
+          description: Successfully returned a hair volume reading
           content:
             application/json:
               schema:
-                type: array
+                type: object
                 items:
                   $ref: '#/components/schemas/HairVolumeReading'
-
         '400':
           description: Invalid request
           content:
@@ -43,35 +36,37 @@ paths:
                 properties:   
                   message:
                     type: string
-    
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:   
+                  message:
+                    type: string
+
   /hair/type:
     get:
-      summary: gets new hair type readings
-      operationId: app.get_hair_type_readings
-      description: Returns hair type readings whose date_created value falls within the specified timestamps
+      summary: gets a hair type reading from history
+      operationId: app.get_hair_type_reading
+      description: Gets hair type readings from the event store
       parameters:
-        - name: start_timestamp
+        - name: index
           in: query
-          description: Start of the timespan
+          description: Gets the hair type reading at the index in the event store
           schema:
-            type: string
-            example: "2025-09-04 21:12:33"
-        - name: end_timestamp
-          in: query
-          description: End of the timespan
-          schema:
-            type: string
-            example: "2025-09-04 22:12:33"
+            type: integer
+            example: 100
       responses:
         '200':
-          description: Successfully returned a list of hair type readings
+          description: Successfully returned a hair type reading
           content:
             application/json:
               schema:
-                type: array
+                type: object
                 items:
                   $ref: '#/components/schemas/HairTypeReading'
-
         '400':
           description: Invalid request
           content:
@@ -81,6 +76,40 @@ paths:
                 properties:   
                   message:
                     type: string
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:   
+                  message:
+                    type: string
+       
+  /stats:
+    get:
+      summary: Gets the reading stats
+      operationId: app.get_reading_stats
+      description: Gets the stats of the hair Volume and Type events
+      responses:
+        '200':
+          description: Successfully returned the statistics
+          content:
+            application/json:
+              schema:
+                type: object
+                items:
+                  $ref: '#/components/schemas/Stats'
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+
 
 components:
   schemas:
@@ -162,4 +191,17 @@ components:
         trace_id:
           type: string
           format: uuid
+      type: object
+
+    Stats:
+      required:
+        - num_volume_readings
+        - num_type_readings
+      properties:
+        num_volume_readings:
+          type: integer
+          example: 100
+        num_type_readings:
+          type: integer
+          example: 100
       type: object

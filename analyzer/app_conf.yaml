@@ -1,0 +1,9 @@
+version: 1
+events:
+  hostname: localhost
+  port: 9092
+  topic: events
+  volume:
+    url: http://localhost:8090/hair/volume
+  type:
+    url: http://localhost:8090/hair/type
