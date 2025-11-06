@@ -1,6 +1,6 @@
 version: 1
 datastore:
-  filename: data.json
+  filename: data/data.json
 scheduler:
   interval: 5
 eventstores:
