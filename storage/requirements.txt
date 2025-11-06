@@ -2,3 +2,4 @@ connexion[flask,uvicorn,swagger-ui]
 sqlalchemy
 mysqlclient
 pykafka==2.8.0
+pymysql
