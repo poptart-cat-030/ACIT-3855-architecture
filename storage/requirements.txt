@@ -3,3 +3,4 @@ sqlalchemy
 mysqlclient
 pykafka==2.8.0
 pymysql
+setuptools
