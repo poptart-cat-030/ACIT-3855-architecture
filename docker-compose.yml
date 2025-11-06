@@ -35,6 +35,9 @@ services:
     build:
       context: receiver
       dockerfile: Dockerfile
+    depends_on:
+      - kafka
+      - storage
     ports:
       - "8080:8080"
     expose:
@@ -44,7 +47,7 @@ services:
       context: storage
       dockerfile: Dockerfile
     depends_on:
-      - mysql
+      - db
       - kafka
     ports:
       - "8090:8090"
@@ -54,6 +57,8 @@ services:
     build:
       context: processing
       dockerfile: Dockerfile
+    depends_on:
+      - storage
     ports:
       - "8100:8100"
     expose:
@@ -62,6 +67,9 @@ services:
     build:
       context: analyzer
       dockerfile: Dockerfile
+    depends_on:
+      - kafka
+      - storage
     ports:
       - "8110:8110"
     expose:
