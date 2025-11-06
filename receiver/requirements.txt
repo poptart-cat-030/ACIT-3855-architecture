@@ -1,0 +1,2 @@
+connexion[flask,uvicorn,swagger-ui]
+pykafka==2.8.0

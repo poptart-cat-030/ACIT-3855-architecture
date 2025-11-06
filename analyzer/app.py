@@ -29,7 +29,7 @@ with open("log_conf.yaml", "r") as f:
 
 logger = logging.getLogger('basicLogger')
 
-HOSTNAME = f"{app_config['events']['hostname']}:{app_config['events']['port']}" # localhost:9092
+HOSTNAME = f"{app_config['events']['hostname']}:{app_config['events']['port']}" # kafka:9092
 
 
 def get_hair_volume_reading(index):
@@ -120,4 +120,4 @@ app = connexion.FlaskApp(__name__, specification_dir='')
 app.add_api("hair-api-1.0.0-swagger.yaml", strict_validation=True, validate_responses=True)
 
 if __name__ == "__main__":
-    app.run(port=8110) # Analyzer is running on port 8110
+    app.run(host="0.0.0.0") # Analyzer is running on port 8110

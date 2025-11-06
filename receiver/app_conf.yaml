@@ -1,9 +1,9 @@
 version: 1
 events:
-  hostname: localhost
+  hostname: kafka
   port: 9092
   topic: events
   volume:
-    url: http://localhost:8090/hair/volume
+    url: http://storage:8090/hair/volume
   type:
-    url: http://localhost:8090/hair/type
+    url: http://storage:8090/hair/type

@@ -58,27 +58,6 @@ def convert_str_timestamp_to_datetime(timestamp):
     return timestamp_truncated
 
 
-# # API endpoint functions
-# @use_db_session # Decorated function
-# def report_hair_volume_readings(session, body):
-#     hair_vol_reading_event = Volume(
-#         salon_id = body['salon_id'],
-#         salon_name = body['salon_name'],
-#         hair_volume = body['hair_volume'],
-#         disposal_method = body['disposal_method'],
-#         # Convert timestamp from string to Python datetime object using strptime
-#             # Also modified original format of timestamps being sent through the yaml file example
-#         batch_timestamp = datetime.datetime.strptime(body['batch_timestamp'], "%Y-%m-%d %H:%M:%S"),
-#         reading_timestamp = datetime.datetime.strptime(body['reading_timestamp'], "%Y-%m-%d %H:%M:%S"),
-#         trace_id = body['trace_id']
-#     )
-#     session.add(hair_vol_reading_event)
-#     session.commit()
-#     logger.info(f"Stored event volume_reading with a trace id of {body['trace_id']}")
-
-#     return NoContent, 201
-
-
 def get_hair_volume_readings(start_timestamp, end_timestamp):
     session = cd.make_session()
 
@@ -93,36 +72,11 @@ def get_hair_volume_readings(start_timestamp, end_timestamp):
         result.to_dict() for result in session.execute(statement).scalars().all()
     ]
 
-    # print(results)
-
     session.close()
 
     logger.debug("Found %d hair volume readings (start: %s, end: %s)", len(results), start, end)
-    # if isinstance(start, datetime.datetime):
-    #     print("start timestamp in hair vol reading is a datetime object")
-    # if isinstance(end, datetime.datetime):
-    #     print("end timestamp in hair vol reading is a datetime object")
 
     return results
-
-
-# @use_db_session 
-# def report_hair_type_readings(session, body):
-#     hair_type_reading_event = Type(
-#         salon_id = body['salon_id'],
-#         salon_name = body['salon_name'],
-#         hair_colour = body['hair_colour'],
-#         hair_texture = body['hair_texture'],
-#         hair_thickness = body['hair_thickness'],
-#         batch_timestamp = datetime.datetime.strptime(body['batch_timestamp'], "%Y-%m-%d %H:%M:%S"),
-#         reading_timestamp = datetime.datetime.strptime(body['reading_timestamp'], "%Y-%m-%d %H:%M:%S"),
-#         trace_id = body['trace_id']
-#     )
-#     session.add(hair_type_reading_event)
-#     session.commit()
-#     logger.info(f"Stored event type_reading with a trace id of {body['trace_id']}")
-
-#     return NoContent, 201
 
 
 def get_hair_type_readings(start_timestamp, end_timestamp):
@@ -139,15 +93,9 @@ def get_hair_type_readings(start_timestamp, end_timestamp):
         result.to_dict() for result in session.execute(statement).scalars().all()
     ]
 
-    # print(results)
-
     session.close()
 
     logger.debug("Found %d hair type readings (start: %s, end: %s)", len(results), start, end)
-    # if isinstance(start, datetime.datetime):
-    #     print("start timestamp in hair type reading is a datetime object")
-    # if isinstance(end, datetime.datetime):
-    #     print("end timestamp in hair type reading is a datetime object")
 
     return results
 
@@ -219,4 +167,4 @@ app.add_api("hair-api-1.0.0-swagger.yaml", strict_validation=True, validate_resp
 
 if __name__ == "__main__":
     setup_kafka_thread()
-    app.run(port=8090) # Receiver is running on port 8080
+    app.run(host="0.0.0.0") # Receiver is running on port 8080

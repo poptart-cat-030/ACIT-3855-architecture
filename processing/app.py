@@ -194,4 +194,4 @@ app.add_api("hair-api-1.0.0-swagger.yaml", strict_validation=True, validate_resp
 
 if __name__ == "__main__":
     init_scheduler()
-    app.run(port=8100)
+    app.run(host="0.0.0.0")
