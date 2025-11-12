@@ -167,4 +167,4 @@ app.add_api("hair-api-1.0.0-swagger.yaml", strict_validation=True, validate_resp
 
 if __name__ == "__main__":
     setup_kafka_thread()
-    app.run(host="0.0.0.0") # Receiver is running on port 8080
+    app.run(port=8090, host="0.0.0.0") # Receiver is running on port 8080

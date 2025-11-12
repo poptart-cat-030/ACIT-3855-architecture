@@ -18,8 +18,9 @@ from pykafka import KafkaClient # For message brokering
 with open('app_conf.yaml', 'r') as f:
     app_config = yaml.safe_load(f.read())
 
-VOLUME_URL = app_config['events']['volume']['url']
-TYPE_URL = app_config['events']['type']['url']
+# Not actually in use
+# VOLUME_URL = app_config['events']['volume']['url']
+# TYPE_URL = app_config['events']['type']['url']
 
 
 with open("log_conf.yaml", "r") as f:
@@ -103,4 +104,4 @@ app = connexion.FlaskApp(__name__, specification_dir='')
 app.add_api("hair-api-1.0.0-swagger.yaml", strict_validation=True, validate_responses=True)
 
 if __name__ == "__main__":    
-    app.run(host="0.0.0.0")
+    app.run(port=8080, host="0.0.0.0")
