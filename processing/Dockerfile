@@ -5,6 +5,8 @@ LABEL maintainer="hlam101@my.bcit.ca"
 RUN mkdir /app
 # Create directory for the data.json file that will created from app.py
 RUN mkdir /app/data
+# Create directory to store log files
+RUN mkdir /app/logs
 
 # We copy just the requirements.txt first to leverage Docker cache
 # on `pip install`

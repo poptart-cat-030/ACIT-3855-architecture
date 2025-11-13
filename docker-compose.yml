@@ -51,7 +51,9 @@ services:
       - "8080"
     volumes:
       - ./config/receiver:/app/config:r # config folder
+      - ./logs/receiver:/app/logs:rw # logs folder
   storage:
+    restart: always
     build:
       context: storage
       dockerfile: Dockerfile
@@ -66,6 +68,7 @@ services:
       - "8090"
     volumes:
       - ./config/storage:/app/config:r # config folder
+      - ./logs/storage:/app/logs:rw # logs folder
   processing:
     build:
       context: processing
@@ -79,6 +82,7 @@ services:
     volumes:
       - ./data/processing:/app/data:rw # data folder
       - ./config/processing:/app/config:r # config folder
+      - ./logs/processing:/app/logs:rw # logs folder
   analyzer:
     build:
       context: analyzer
@@ -92,6 +96,7 @@ services:
       - "8110"
     volumes:
       - ./config/analyzer:/app/config:r # config folder
+      - ./logs/analyzer:/app/logs:rw # logs folder
 
 # # Defines a named volume
 # volumes:

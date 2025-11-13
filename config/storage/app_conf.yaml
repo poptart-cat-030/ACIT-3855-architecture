@@ -1,8 +1,8 @@
 version: 1
 datastore:
-  user: hlam
+  user: root
   password: password
-  hostname: storage
+  hostname: db
   port: 3307
   db: storage
 events:
