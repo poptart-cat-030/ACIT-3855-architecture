@@ -24,8 +24,5 @@ USER nobody
 # Tells on which port the service listens in the container
 EXPOSE 8090
 
-# Entrypoint = run Python
-ENTRYPOINT [ "python3" ]
-
-# Default = run app.py
-CMD [ "app.py" ]
+# Entrypoint = run entrypoint.sh script (creates database tables and runs the app)
+ENTRYPOINT ["./entrypoint.sh"]

@@ -17,7 +17,7 @@ with open("config/log_conf.yaml", "r") as f:
 
 logger = logging.getLogger('basicLogger')
 
-logger.info(f"MySQL connection string: 'mysql+pymysql://{app_config['datastore']['user']}:{app_config['datastore']['password']}@{app_config['datastore']['hostname']}:{app_config['datastore']['port']}/{app_config['datastore']['db']}'")
+logger.info(f"create_database.py script: MySQL connection string: 'mysql+pymysql://{app_config['datastore']['user']}:{app_config['datastore']['password']}@{app_config['datastore']['hostname']}:{app_config['datastore']['port']}/{app_config['datastore']['db']}'")
 
 ENGINE = create_engine(f"mysql+pymysql://{app_config['datastore']['user']}:{app_config['datastore']['password']}@{app_config['datastore']['hostname']}:{app_config['datastore']['port']}/{app_config['datastore']['db']}", pool_recycle=360)
 

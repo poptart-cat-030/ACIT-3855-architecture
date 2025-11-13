@@ -1,9 +1,9 @@
 version: 1
 datastore:
-  user: root
+  user: hlam
   password: password
   hostname: db
-  port: 3307
+  port: 3306
   db: storage
 events:
   hostname: kafka
