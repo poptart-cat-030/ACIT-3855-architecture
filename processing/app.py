@@ -16,7 +16,7 @@ import logging.config
 from apscheduler.schedulers.background import BackgroundScheduler 
 
 # Setting app configurations
-with open('app_conf.yaml', 'r') as f:
+with open('config/app_conf.yaml', 'r') as f:
     app_config = yaml.safe_load(f.read())
 
 DATASTORE_FILE = app_config['datastore']['filename']
@@ -24,7 +24,7 @@ VOLUME_URL = app_config['eventstores']['volume']['url']
 TYPE_URL = app_config['eventstores']['type']['url']
 
 # Setting logging configurations
-with open("log_conf.yaml", "r") as f:
+with open("config/log_conf.yaml", "r") as f:
     LOG_CONFIG = yaml.safe_load(f.read())
     logging.config.dictConfig(LOG_CONFIG)
 
@@ -190,7 +190,7 @@ def init_scheduler():
 
 
 app = connexion.FlaskApp(__name__, specification_dir='')
-app.add_api("hair-api-1.0.0-swagger.yaml", strict_validation=True, validate_responses=True)
+app.add_api("config/hair-api-1.0.0-swagger.yaml", strict_validation=True, validate_responses=True)
 
 if __name__ == "__main__":
     init_scheduler()

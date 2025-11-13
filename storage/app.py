@@ -25,11 +25,11 @@ from threading import Thread
 
 
 # Setting app configurations
-with open('app_conf.yaml', 'r') as f:
+with open('config/app_conf.yaml', 'r') as f:
     app_config = yaml.safe_load(f.read())
 
 # Logging configurations
-with open("log_conf.yaml", "r") as f:
+with open("config/log_conf.yaml", "r") as f:
     LOG_CONFIG = yaml.safe_load(f.read())
     logging.config.dictConfig(LOG_CONFIG)
 
@@ -163,7 +163,7 @@ def setup_kafka_thread():
     t1.start()
 
 app = connexion.FlaskApp(__name__, specification_dir='')
-app.add_api("hair-api-1.0.0-swagger.yaml", strict_validation=True, validate_responses=True)
+app.add_api("config/hair-api-1.0.0-swagger.yaml", strict_validation=True, validate_responses=True)
 
 if __name__ == "__main__":
     setup_kafka_thread()

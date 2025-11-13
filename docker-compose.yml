@@ -15,7 +15,7 @@ services:
       KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: INSIDE:PLAINTEXT,OUTSIDE:PLAINTEXT
       KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
     volumes:
-      - ./data/kafka:/kafka
+      - ./data/kafka:/kafka # data
       - /var/run/docker.sock:/var/run/docker.sock
     depends_on:
       - "zookeeper"
@@ -37,7 +37,7 @@ services:
       - "3307:3306"
     volumes:
     # Where our data will be persisted
-      - ./data/database:/var/lib/mysql
+      - ./data/database:/var/lib/mysql # data folder
   receiver:
     build:
       context: receiver
@@ -49,6 +49,8 @@ services:
       - "8080:8080"
     expose:
       - "8080"
+    volumes:
+      - ./config/receiver:/app/config:r # config folder
   storage:
     build:
       context: storage
@@ -62,6 +64,8 @@ services:
       - "8090:8090"
     expose:
       - "8090"
+    volumes:
+      - ./config/storage:/app/config:r # config folder
   processing:
     build:
       context: processing
@@ -73,7 +77,8 @@ services:
     expose:
       - "8100"
     volumes:
-      - ./data/processing:/app/data:rw
+      - ./data/processing:/app/data:rw # data folder
+      - ./config/processing:/app/config:r # config folder
   analyzer:
     build:
       context: analyzer
@@ -85,7 +90,9 @@ services:
       - "8110:8110"
     expose:
       - "8110"
-      
+    volumes:
+      - ./config/analyzer:/app/config:r # config folder
+
 # # Defines a named volume
 # volumes:
 #   my-db:
