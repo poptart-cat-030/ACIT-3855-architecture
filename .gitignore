@@ -1,5 +1,5 @@
 **/__pycache__
 **/app.log
 processing/data.json
-data/*
-logs/*
+data
+logs

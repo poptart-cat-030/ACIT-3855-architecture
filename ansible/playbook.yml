@@ -1,0 +1,61 @@
+- name: Setup microservices app from private github repo
+  hosts: servers
+  become: yes
+
+  tasks:
+  # # Connect to virtual machine
+  #   - name: Add public SSH key for passwordless login
+  #     ansible.posix.authorized_key:
+  #       # The user on the remote host whose authorized_keys file will be modified.
+  #       user: azureuser
+  #       # Ensure the key exists
+  #       state: present
+  #       # Use the lookup plugin to read the actual content of the public key file from local control machine
+  #       key: "{{ lookup('file', '/home/hlam/.ssh/acit-3855_key.pub') }}"
+
+  # Installing necessary packages
+    - name: Ensure python is installed
+      apt:
+        name: python3
+        state: present
+
+    - name: Ensure Git is installed
+      apt:
+        name: git
+        state: present
+
+    - name: Ensure docker is installed
+      apt:
+        name: docker
+        state: present
+
+    - name: Ensure docker-compose is installed
+      apt:
+        name: docker-compose
+        state: present
+
+  # Cloning github repository
+    - name: Copy the private SSH key from local to remote for GitHub repo access
+      copy:
+        src: ~/.ssh/deploy_key # private key
+        dest: /home/azureuser/.ssh/deploy_key
+        mode: '0600'
+        owner: "azureuser"
+        group: "azureuser"
+
+    - name: Clone private repository
+      git:
+        repo: git@github.com:poptart-cat-030/ACIT-3855-architecture.git
+        dest: /home/azureuser # Clone to home directory
+        version: main
+
+  # Running docker commands
+    - name: Build and start docker containers
+      ansible.builtin.command:
+        cmd: docker compose up -d
+        chdir: /home/azureuser/ACIT-3855-architecture # Go into cloned git repo and start containers via the docker compose file
+      become: yes
+
+
+
+
