@@ -38,6 +38,14 @@ services:
     volumes:
     # Where our data will be persisted
       - ./data/database:/var/lib/mysql # data folder
+  webserver:
+    build:
+      context: webserver
+      dockerfile: Dockerfile
+    ports:
+      - "80:80"
+    expose:
+      - "80"
   receiver:
     build:
       context: receiver

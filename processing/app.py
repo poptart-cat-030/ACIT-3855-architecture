@@ -1,6 +1,10 @@
 import connexion
 from connexion import NoContent
 
+# Disabling CORS
+from connexion.middleware import MiddlewarePosition
+from starlette.middleware.cors import CORSMiddleware
+
 import os.path # For reading and writing to files
 import json # For data operations
 from datetime import datetime, timezone # For creating and formatting timestamps and converting timezones 
@@ -191,6 +195,16 @@ def init_scheduler():
 
 app = connexion.FlaskApp(__name__, specification_dir='')
 app.add_api("config/hair-api-1.0.0-swagger.yaml", strict_validation=True, validate_responses=True)
+
+# Disabling CORS
+app.add_middleware(
+    CORSMiddleware,
+    position=MiddlewarePosition.BEFORE_EXCEPTION,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 if __name__ == "__main__":
     init_scheduler()

@@ -1,6 +1,10 @@
 import connexion
 from connexion import NoContent
 
+# Disabling CORS
+from connexion.middleware import MiddlewarePosition
+from starlette.middleware.cors import CORSMiddleware
+
 import json # For data operations
 import datetime # For creating timestamps and datetime object conversions
 
@@ -118,6 +122,16 @@ def get_reading_stats():
 
 app = connexion.FlaskApp(__name__, specification_dir='')
 app.add_api("config/hair-api-1.0.0-swagger.yaml", strict_validation=True, validate_responses=True)
+
+# Disabling CORS
+app.add_middleware(
+    CORSMiddleware,
+    position=MiddlewarePosition.BEFORE_EXCEPTION,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 if __name__ == "__main__":
     app.run(port=8110, host="0.0.0.0") # Analyzer is running on port 8110
