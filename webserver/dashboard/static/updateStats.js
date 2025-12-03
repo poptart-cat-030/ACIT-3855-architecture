@@ -25,7 +25,7 @@ const getLocaleDateStr = () => (new Date()).toLocaleString()
 const getStats = () => {
     document.getElementById("last-updated-value").innerText = getLocaleDateStr()
     
-    makeReq(PROCESSING_STATS_API_URL, (result) => updateCodeDiv(result.date_last_updated, "processing-stats"))
+    makeReq(PROCESSING_STATS_API_URL, (result) => updateCodeDiv(result, "processing-stats"))
 
     makeReq(ANALYZER_API_URL.stats, (result) => {
         updateCodeDiv(result, "analyzer-stats")
