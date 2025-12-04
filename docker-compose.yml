@@ -54,8 +54,8 @@ services:
       context: receiver
       dockerfile: Dockerfile
     depends_on:
-      - kafka
-      - storage
+      kafka:
+        condition: service_healthy
     ports:
       - "8080:8080"
     expose:
@@ -99,8 +99,8 @@ services:
       context: analyzer
       dockerfile: Dockerfile
     depends_on:
-      - kafka
-      - storage
+      kafka:
+        condition: service_healthy
     ports:
       - "8110:8110"
     expose:

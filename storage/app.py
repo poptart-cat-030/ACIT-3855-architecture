@@ -3,6 +3,8 @@ from connexion import NoContent
 
 import json # For data operations
 import datetime # For creating timestamps and datetime object conversions
+import time # For kafka sleep
+import random
 
 # SQLAlchemy and database modules
 from models import Volume, Type # From models.py, my tables
@@ -19,10 +21,10 @@ import logging.config
 # For message brokering
 from pykafka import KafkaClient
 from pykafka.common import OffsetType
+from pykafka.exceptions import KafkaException
 
 # Threading
 from threading import Thread
-
 
 # Setting app configurations
 with open('config/app_conf.yaml', 'r') as f:
@@ -34,6 +36,152 @@ with open("config/log_conf.yaml", "r") as f:
     logging.config.dictConfig(LOG_CONFIG)
 
 logger = logging.getLogger('basicLogger')
+
+
+# Message Brokering
+# Create class for managing Kafka connections (client and consumer)
+class KafkaWrapper:
+    def __init__(self, hostname, topic):
+        self.hostname = hostname
+        self.topic = topic
+        self.client = None
+        self.consumer = None
+        self.producer = None
+        self.connect() 
+
+
+    # Infinitely attempt to create a working client and consumer
+    def connect(self):
+        """Infinite loop: will keep trying"""
+
+        while True: # Try until successful
+            logger.debug("Trying to connect to Kafka...")
+            if self.make_client(): # Tries to make a Kafka client
+                if self.make_consumer() and self.make_producer(): # Tries to make a Kafka consumer and producer
+                    # If client, consumer, and producer successfully created/already existing, stop trying to create them
+                    break
+            # Sleeps for a random amount of time (0.5 to 1.5s)
+            time.sleep(random.randint(500, 1500) / 1000)
+
+
+    def make_client(self):
+        """
+        Runs once, makes a client and sets it on the instance.
+        Returns: True (success), False (failure)
+        """
+
+        if self.client is not None: # if client already exists, don't make one
+            return True
+        
+        try:
+            # Make client and save it in self.client
+            self.client = KafkaClient(hosts=self.hostname)
+            logger.info("Kafka client created!")
+            return True
+        except KafkaException as e:
+            msg = f"Kafka error when making client: {e}"
+            logger.warning(msg)
+            self.client = None
+            self.consumer = None
+            self.producer = None
+            return False
+
+
+    def make_consumer(self):
+        """
+        Runs once, makes a consumer and sets it on the instance.
+        Returns: True (success), False (failure)
+        """
+
+        if self.consumer is not None:
+            return True # if consumer already exists, don't make one
+        if self.client is None:
+            return False # Don't try to create consumer if client doesn't exist
+        
+        try:
+            # Create a consume on a consumer group, that only reads new messages
+            # (uncommitted messages) when the service re-starts (i.e., it doesn't
+            # read all the old messages from the history in the message queue).
+            topic = self.client.topics[self.topic]
+            self.consumer = topic.get_simple_consumer(
+                reset_offset_on_start=False, # Don't read old messages
+                auto_offset_reset=OffsetType.LATEST # Read only new messages
+            )
+        except KafkaException as e: # Will be triggered if Kafka is down
+            msg = f"Make error when making consumer: {e}"
+            logger.warning(msg)
+            # Reset saved client, consumer, and producer
+            self.client = None
+            self.consumer = None
+            self.producer = None
+            return False # connect() will retry
+
+
+    def make_producer(self):
+        """
+        Runs once, makes a producer and sets it on the instance.
+        Returns: True (success), False (failure)
+        """
+
+        if self.producer is not None:
+            return True # if producer exists, don't make one
+        if self.client is None:
+            return False # Don't try to create producer if client doesn't exist
+        
+        try:
+            topic_for_producer = self.client.topics[self.topic]
+            self.producer = topic_for_producer.get_sync_producer()
+        except KafkaException as e: # Will be triggered if Kafka is down
+            msg = f"Make error when making producer: {e}"
+            logger.warning(msg)
+            # Reset saved client, consumer, and producer
+            self.client = None
+            self.consumer = None
+            self.producer = None
+            return False # connect() will retry
+
+
+    def messages(self):
+        """Generator method that catches exceptions in the consumer loop"""
+
+        if self.consumer is None:
+            self.connect() # Try to create/reconnect client, consumer, and producer
+
+        while True: # Runs infinitely
+            try:
+                for msg in self.consumer:
+                    yield msg # To be used in process_messages()
+                    # self.consumer.commit_offsets() # Tell kafka that this message has been consumed
+            # If any error occurs, keep trying
+            except KafkaException as e:
+                # Reset client, consumer, and producer and attempt to reconnect
+                msg = f"Kafka issue in comsumer: {e}"
+                logger.warning(msg)
+                self.client = None
+                self.consumer = None
+                self.producer = None
+                self.connect()
+
+
+    def produce(self, message):
+        """Produce from messages - retry if it doesn't work"""
+
+        if self.producer is None:
+            self.connect() # Try to create/reconnect client, consumer, and producer
+
+        while True: # Runs infinitely
+            try:
+                self.producer.produce(message)
+                break # Break out of loop
+            # If any error occurs, keep trying
+            except KafkaException as e:
+                # Reset client, consumer, and producer and attempt to reconnect
+                msg = f"Kafka issue in producer: {e}"
+                logger.warning(msg)
+                self.client = None
+                self.consumer = None
+                self.producer = None
+                self.connect()
 
 
 # SQLAlchemy functions
@@ -101,25 +249,20 @@ def get_hair_type_readings(start_timestamp, end_timestamp):
 
 
 def process_messages():
-    """ Process event messages """
-    hostname = f"{app_config['events']['hostname']}:{app_config['events']['port']}" # localhost:9092
-    client = KafkaClient(hosts=hostname)
-    topic = client.topics[str.encode(f"{app_config['events']['topic']}")]
-    
-    # Create a consume on a consumer group, that only reads new messages
-    # (uncommitted messages) when the service re-starts (i.e., it doesn't
-    # read all the old messages from the history in the message queue).
+    """ Process event messages using KafkaWrapper"""
+    # Create a KafkaWrapper instance (has connection failure handling) globally
+    kafka_wrapper = KafkaWrapper(
+        f"{app_config['events']['hostname']}:{app_config['events']['port']}", # host
+        str.encode(app_config['events']['topic']) # topic
+    )
 
-    consumer = topic.get_simple_consumer(consumer_group=b'event_group',
-    reset_offset_on_start=False,
-    auto_offset_reset=OffsetType.LATEST)
-    # This is blocking - it will wait for a new message
-    for msg in consumer:
+    for msg in kafka_wrapper.messages():
         msg_str = msg.value.decode('utf-8')
         msg = json.loads(msg_str)
         logger.info("Message: %s" % msg)
         payload = msg["payload"]
-        if msg["type"] == "volume_reading": # Change this to your event type
+
+        if msg["type"] == "volume_reading":
             # Store the volume_reading (i.e., the payload) to the DB
             session = cd.make_session()
             hair_vol_reading_event = Volume(
@@ -137,7 +280,7 @@ def process_messages():
             session.commit()
             logger.info(f"Stored event volume_reading with a trace id of {payload['trace_id']}")
 
-        elif msg["type"] == "type_reading": # Change this to your event type
+        elif msg["type"] == "type_reading":
             # Store the type_reading (i.e., the payload) to the DB
             session = cd.make_session()
             hair_type_reading_event = Type(
@@ -154,8 +297,6 @@ def process_messages():
             session.commit()
             logger.info(f"Stored event type_reading with a trace id of {payload['trace_id']}")
 
-        # Commit the new message as being read
-        consumer.commit_offsets()
 
 def setup_kafka_thread():
     t1 = Thread(target=process_messages)
