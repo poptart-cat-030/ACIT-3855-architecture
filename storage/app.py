@@ -298,6 +298,12 @@ def process_messages():
             logger.info(f"Stored event type_reading with a trace id of {payload['trace_id']}")
 
 
+# Endpoint function for checking health of this service
+    # Called through /health endpoint
+def get_health():
+    return {"status": "Running"}, 200 # If service is running, then it will return 200 which means it's ok
+
+
 def setup_kafka_thread():
     t1 = Thread(target=process_messages)
     t1.setDaemon(True)

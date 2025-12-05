@@ -1,0 +1,14 @@
+version: 1
+datastore:
+  filename: data/statuses.json
+scheduler:
+  interval: 20
+eventstores:
+  analyzer:
+    url: http://analyzer:8110/health
+  processing:
+    url: http://processing:8100/health
+  receiver:
+    url: http://receiver:8080/health
+  storage:
+    url: http://storage:8090/health

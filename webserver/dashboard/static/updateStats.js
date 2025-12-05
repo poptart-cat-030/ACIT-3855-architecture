@@ -5,6 +5,7 @@ const ANALYZER_API_URL = {
     volume: "/api/analyzer/hair/volume", // Get volume reading at some index endpoint from analyzer
     type: "/api/analyzer/hair/type" // Get type reading at some index endpoint from analyzer
 }
+const HEALTH_API_URL = "/api/health/statuses"
 
 // This function fetches and updates the general statistics
 const makeReq = (url, cb) => {
@@ -24,6 +25,15 @@ const getLocaleDateStr = () => (new Date()).toLocaleString()
 
 const getStats = () => {
     document.getElementById("last-updated-value").innerText = getLocaleDateStr()
+
+    // Get health stats
+    makeReq(HEALTH_API_URL, (result) => {
+        updateCodeDiv(result.analyzer, "analyzer-status")
+        updateCodeDiv(result.processing, "processing-status")
+        updateCodeDiv(result.receiver, "receiver-status")
+        updateCodeDiv(result.storage, "storage-status")
+        updateCodeDiv(result.last_update, "last-update")
+    })
     
     makeReq(PROCESSING_STATS_API_URL, (result) => updateCodeDiv(result, "processing-stats"))
 
@@ -37,7 +47,7 @@ const getStats = () => {
             updateCodeDiv(result, "event-volume")
         })
 
-        makeReq(`${ANALYZER_API_URL.type}?index=${Math.floor(Math.random() * Math.abs(num_volume_readings))}`, (result) => {
+        makeReq(`${ANALYZER_API_URL.type}?index=${Math.floor(Math.random() * Math.abs(num_type_readings))}`, (result) => {
             updateCodeDiv(result, "event-type")
         })
     })
@@ -59,7 +69,7 @@ const updateErrorMessages = (message) => {
 
 const setup = () => {
     getStats()
-    setInterval(() => getStats(), 4000) // Update every 4 seconds
+    setInterval(getStats(), 4000) // Update every 4 seconds
 }
 
 document.addEventListener('DOMContentLoaded', setup)

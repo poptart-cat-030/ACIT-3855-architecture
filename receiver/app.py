@@ -250,6 +250,12 @@ def report_hair_type_readings(body):
     return NoContent, 201
 
 
+# Endpoint function for checking health of this service
+    # Called through /health endpoint
+def get_health():
+    return {"status": "Running"}, 200 # If service is running, then it will return 200 which means it's ok
+
+
 app = connexion.FlaskApp(__name__, specification_dir='')
 app.add_api("config/hair-api-1.0.0-swagger.yaml", strict_validation=True, validate_responses=True)
 

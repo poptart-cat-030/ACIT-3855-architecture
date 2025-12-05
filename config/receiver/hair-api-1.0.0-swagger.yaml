@@ -38,6 +38,22 @@ paths:
         '400':
           description: 'invalid input, object invalid'
 
+  /health:
+    get:
+      summary: Check status of this service
+      operationId: app.get_health
+      description: Return status code 200 if this endpoint is triggered
+      responses:
+        '200':
+          description: Service is running
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+
 components:
   schemas:
     HairVolumeReadingBatch:

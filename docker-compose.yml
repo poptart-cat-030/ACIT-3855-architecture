@@ -1,6 +1,14 @@
 services:
   zookeeper:
     image: wurstmeister/zookeeper
+    ports:
+      - "2181:2181"
+    healthcheck:
+      test: ["CMD", "bash", "-c", "nc -z localhost 2181"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
   kafka:
     image: wurstmeister/kafka
     command: [start-kafka.sh]
@@ -18,7 +26,8 @@ services:
       - ./data/kafka:/kafka # data
       - /var/run/docker.sock:/var/run/docker.sock
     depends_on:
-      - "zookeeper"
+      zookeeper:
+        condition: service_healthy
     healthcheck:
       test: ["CMD", "bash", "-c", "nc -z localhost 9092"]
       interval: 5s
@@ -38,17 +47,6 @@ services:
     volumes:
     # Where our data will be persisted
       - ./data/database:/var/lib/mysql # data folder
-  webserver:
-    build:
-      context: webserver
-      dockerfile: Dockerfile
-    depends_on:
-      - processing
-      - analyzer
-    ports:
-      - "80:80"
-    expose:
-      - "80"
   receiver:
     build:
       context: receiver
@@ -108,6 +106,37 @@ services:
     volumes:
       - ./config/analyzer:/app/config:r # config folder
       - ./logs/analyzer:/app/logs:rw # logs folder
+  health: # Check health of backend services
+    build:
+      context: health
+      dockerfile: Dockerfile
+    depends_on:
+      - analyzer
+      - processing
+      - receiver
+      - storage
+    ports:
+      - "8120:8120"
+    expose:
+      - "8120"
+    volumes:
+      - ./data/health:/app/data:rw # data folder
+      - ./config/health:/app/config:r # config folder
+      - ./logs/health:/app/logs:rw # logs folder
+  webserver:
+    build:
+      context: webserver
+      dockerfile: Dockerfile
+    depends_on:
+      - processing
+      - analyzer
+      - storage
+      - receiver
+      - health
+    ports:
+      - "80:80"
+    expose:
+      - "80"
 
 # # Defines a named volume
 # volumes:

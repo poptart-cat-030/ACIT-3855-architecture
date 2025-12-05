@@ -1,0 +1,60 @@
+openapi: 3.0.3
+info:
+  description: This API receives hair data from hair salons around North America
+  version: "1.0.0"
+  title: Hair Salon API
+  contact:
+    email: hlam101@my.bcit.ca
+
+paths:
+  /statuses:
+    get:
+      summary: Gets the status of all backend services
+      operationId: app.get_statuses
+      description: Gets status of analyzer, processing, receiver, and storage
+      responses:
+        '200':
+          description: Successfully returned a status object
+          content:
+            application/json:
+              schema:
+                type: object
+                items:
+                  $ref: '#/components/schemas/Statuses'
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+
+
+components:
+  schemas:
+    Statuses:
+      required:
+      - analyzer_status
+      - processing_status
+      - receiver_status
+      - storage_status
+      - last_update
+      properties:
+        analyzer_status:
+          type: string
+          example: Running
+        processing_status:
+          type: string
+          example: Down
+        receiver_status:
+          type: string
+          example: Running
+        storage_status:
+          type: string
+          example: Down
+        last_update:
+          type: string
+          example: "2025-12-04 11:08:00"
+      type: object
