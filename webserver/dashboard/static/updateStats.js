@@ -69,7 +69,7 @@ const updateErrorMessages = (message) => {
 
 const setup = () => {
     getStats()
-    setInterval(getStats(), 4000) // Update every 4 seconds
+    setInterval(() => getStats(), 4000) // Update every 4 seconds
 }
 
 document.addEventListener('DOMContentLoaded', setup)

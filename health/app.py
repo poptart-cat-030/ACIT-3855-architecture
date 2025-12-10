@@ -29,6 +29,10 @@ PROCESSING_URL = app_config['eventstores']['processing']['url']
 RECEIVER_URL = app_config['eventstores']['receiver']['url']
 STORAGE_URL = app_config['eventstores']['storage']['url']
 
+# HTTPX timeouts
+DEFAULT_TIMEOUT_INTERVAL = app_config['timeouts']['default']['interval']
+READ_TIMEOUT_INTERVAL = app_config['timeouts']['read']['interval']
+
 # Setting logging configurations
 with open("config/log_conf.yaml", "r") as f:
     LOG_CONFIG = yaml.safe_load(f.read())
@@ -102,7 +106,7 @@ def get_statuses():
 def populate_statuses():
     logger.info("Periodic health checking has started.")
 
-    timeout = httpx.Timeout(10.0, read=5) # Set 5 second time limit for waiting for response body to be received
+    timeout = httpx.Timeout(DEFAULT_TIMEOUT_INTERVAL, read=READ_TIMEOUT_INTERVAL) # Set 5 second time limit for waiting for response body to be received
     # If response isn't received, raise ReadTimeout exception (set 10 second timeout by default)
     client = httpx.Client(timeout=timeout)
 
