@@ -1,0 +1,16 @@
+version: 1
+datastore:
+  filename: data/status.json
+scheduler:
+  interval: 20
+timeout:
+  interval: 2
+eventstores:
+  analyzer:
+    url: http://analyzer:8110/stats
+  processing:
+    url: http://processing:8100/stats
+  receiver:
+    url: http://receiver:8080/check
+  storage:
+    url: http://storage:8090/stats

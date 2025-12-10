@@ -206,7 +206,7 @@ def report_hair_volume_readings(body):
 
         msg = { "type": "volume_reading",
         # Current time in UTC since that's what the MySQL database is storing the timestamps as
-        "datetime": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%S"),
+        "datetime": datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S"),
         "payload": request_message
         }
         msg_str = json.dumps(msg)
@@ -238,7 +238,7 @@ def report_hair_type_readings(body):
 
         msg = { "type": "type_reading",
         # Current time in UTC since that's what the MySQL database is storing the timestamps as
-        "datetime": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%S"),
+        "datetime": datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S"),
         "payload": request_message
         }
         msg_str = json.dumps(msg)
@@ -254,6 +254,17 @@ def report_hair_type_readings(body):
     # Called through /health endpoint
 def get_health():
     return {"status": "Running"}, 200 # If service is running, then it will return 200 which means it's ok
+
+
+def get_check():
+    ''' 
+        Checks health of this receiver. Called through /check endpoint.
+
+        Returns:
+            string: datetime
+    '''
+    status_datetime = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S")
+    return {"status_datetime": status_datetime}, 200 # If service is running, then it will return 200 (OK)
 
 
 app = connexion.FlaskApp(__name__, specification_dir='')

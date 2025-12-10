@@ -137,7 +137,20 @@ services:
       - "80:80"
     expose:
       - "80"
-
-# # Defines a named volume
-# volumes:
-#   my-db:
+  check:
+    build:
+      context: check
+      dockerfile: Dockerfile
+    depends_on:
+      - analyzer
+      - processing
+      - receiver
+      - storage
+    ports:
+      - "8130:8130"
+    expose:
+      - "8130"
+    volumes:
+      - ./data/check:/app/data:rw # data folder
+      - ./config/check:/app/config:r # config folder
+      - ./logs/check:/app/logs:rw # logs folder

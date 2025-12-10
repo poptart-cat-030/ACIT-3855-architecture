@@ -40,7 +40,7 @@ paths:
 
   /health:
     get:
-      summary: Check status of this service
+      summary: Check health of this service
       operationId: app.get_health
       description: Return status code 200 if this endpoint is triggered
       responses:
@@ -53,6 +53,23 @@ paths:
                 properties:
                   message:
                     type: string
+
+  /check:
+    get:
+      summary: Check the health of the receiver
+      operationId: app.get_check
+      description: Service is healthy if this service returns a response
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status_datetime:
+                    type: string
+                    example: "2025-10-12 10:57:33"
 
 components:
   schemas:

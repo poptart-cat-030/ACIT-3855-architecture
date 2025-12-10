@@ -304,6 +304,25 @@ def get_health():
     return {"status": "Running"}, 200 # If service is running, then it will return 200 which means it's ok
 
 
+def get_event_stats():
+    ''' 
+        Counts number of events of each event type in the database
+
+        Returns:
+            dict: int (2)
+    '''
+    session = cd.make_session()
+
+    num_volume_readings = session.query(Volume).count()
+    num_type_readings = session.query(Type).count()
+
+    session.close()
+
+    logger.info("Found %d hair volume readings and %d hair type readings", num_volume_readings, num_type_readings)
+
+    return { "num_vol": num_volume_readings, "num_type": num_type_readings }, 200
+
+
 def setup_kafka_thread():
     t1 = Thread(target=process_messages)
     t1.setDaemon(True)

@@ -6,6 +6,7 @@ const ANALYZER_API_URL = {
     type: "/api/analyzer/hair/type" // Get type reading at some index endpoint from analyzer
 }
 const HEALTH_API_URL = "/api/health/statuses"
+// const CHECK_URL = "/api/check/stats"
 
 // This function fetches and updates the general statistics
 const makeReq = (url, cb) => {
