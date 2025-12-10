@@ -33,6 +33,8 @@ STORAGE_URL = app_config['eventstores']['storage']['url']
 DEFAULT_TIMEOUT_INTERVAL = app_config['timeouts']['default']['interval']
 READ_TIMEOUT_INTERVAL = app_config['timeouts']['read']['interval']
 
+SERVICES = app_config['eventstores']
+
 # Setting logging configurations
 with open("config/log_conf.yaml", "r") as f:
     LOG_CONFIG = yaml.safe_load(f.read())
@@ -42,6 +44,7 @@ logger = logging.getLogger('basicLogger')
 
 # File helper functions
 def does_file_exist(filename):
+    ''' Checks if file exists and creates it if it doesn't '''
     if os.path.isfile(filename):
         return True
     else:
@@ -67,6 +70,7 @@ def write_to_file(filename, content):
 # Create dict with statuses set to Down if there are no previous statuses
     # Last updated time = now
 def create_dummy_statuses():
+    ''' Generate dummy statuses if file doesn't exist or is empty '''
     # Get current time (in UTC since that's what the MySQL database is storing the other timestamps as)
     date_last_updated = datetime.now(timezone.utc)
     # Convert it to string in the format Year-Month-Day Hours-Minutes-Seconds
@@ -82,10 +86,16 @@ def create_dummy_statuses():
     return dummy_statuses
 
 
-# GET Endpoint function for checking health of backend services service
+# GET Endpoint function for checking health of backend services
     # Reads statuses from statuses file and returns it
     # Called through /health endpoint
 def get_statuses():
+    ''' 
+        Checks health of backend services from the statuses file
+        
+        Returns: 
+            dict: Status of each service and the time of the last update
+    '''
     logger.info("GET request to '/statuses' was received.")
     # If file doesn't exist, return nothing with status code 404
     if not os.path.isfile(DATASTORE_FILE):
@@ -104,6 +114,9 @@ def get_statuses():
     # Makes GET requests to backend service
     # Constantly running in background
 def populate_statuses():
+    ''' 
+        Updates health statuses in the statuses file based on GET requests to each service's /health endpoint
+    '''
     logger.info("Periodic health checking has started.")
 
     timeout = httpx.Timeout(DEFAULT_TIMEOUT_INTERVAL, read=READ_TIMEOUT_INTERVAL) # Set 5 second time limit for waiting for response body to be received
@@ -120,89 +133,33 @@ def populate_statuses():
     # Update statuses received from the statuses.json file and then overwrite the statuses.json file at the end
     statuses = get_file_contents(DATASTORE_FILE)
 
-    analyzer_health = statuses['analyzer']
-    processing_health = statuses['processing']
-    receiver_health = statuses['receiver']
-    storage_health = statuses['storage']
-
-        # Compare current time with last updated time for triggering the scheduler
+    # Compare current time with last updated time for triggering the scheduler
     last_updated_time = statuses['last_update']
     # Get current time (in UTC since that's what the MySQL database is storing the other timestamps as)
     current_datetime = datetime.now(timezone.utc)
     # Convert it to string in the format Year-Month-Day Hours-Minutes-Seconds
     current_datetime_str = datetime.strftime(current_datetime, "%Y-%m-%d %H:%M:%S")
 
-    
     # Handling service health GET endpoints and statuses
-        # analyzer
-    try:
-        analyzer_response = client.get(ANALYZER_URL)
-        if analyzer_response.status_code == 200: # Status code will be 200 if service is running
-            analyzer_response_data = analyzer_response.json()
-            analyzer_health = analyzer_response_data['status'] # Get status based on response body ("Running" if running)
-            logger.info(f"Status of analyzer is: {analyzer_health}")
-        else:
-            logger.error(f"GET request to '{ANALYZER_URL}' failed with status code {analyzer_response.status_code}")
-            analyzer_health = "Down"
-            logger.info(f"Status of analyzer is: {analyzer_health}")
-    except Exception as e:
-        logger.error(f"Error: Did not receive response body from '{ANALYZER_URL}'. Exception {e}")
-        analyzer_health = "Down"
-    
+        # Retrieving service name and the dictionary of variables nested under it (just URL for now)
+    for service_name, service_info in SERVICES.items():
+        try:
+            response = client.get(service_info['url'])
+            if response.status_code == 200: # Status code will be 200 if service is running
+                response_data = response.json()
+                service_health = response_data['status'] # Get status based on response body ("Running" if running)
+                statuses[service_name] = service_health
+                logger.info(f"Status of {service_name} is: {service_health}")
+            else:
+                logger.error(f"GET request to '{service_info['url']}' failed with status code {response.status_code}")
+                service_health = "Down"
+                statuses[service_name] = service_health
+                logger.info(f"Status of {service_name} is: {service_health}")
+        except Exception as e:
+            logger.error(f"Error: Did not receive response body from '{service_info['url']}'. Exception {e}")
+            service_health = "Down"
+            statuses[service_name] = service_health
 
-        # processing
-    try:
-        processing_response = client.get(PROCESSING_URL)
-        if processing_response.status_code == 200: # Status code will be 200 if service is running
-            processing_response_data = processing_response.json()
-            processing_health = processing_response_data['status'] # Get status based on response body ("Running" if running)
-            logger.info(f"Status of processing is: {processing_health}")
-        else:
-            logger.error(f"GET request to '{PROCESSING_URL}' failed with status code {processing_response.status_code}")
-            processing_health = "Down"
-            logger.info(f"Status of processing is: {processing_health}")
-    except Exception as e:
-        logger.error(f"Error: Did not receive response body from '{PROCESSING_URL}'. Exception {e}")
-        processing_health = "Down"
-
-
-        # receiver
-    try:
-        receiver_response = client.get(RECEIVER_URL)
-        if receiver_response.status_code == 200: # Status code will be 200 if service is running
-            receiver_response_data = receiver_response.json()
-            receiver_health = receiver_response_data['status'] # Get status based on response body ("Running" if running)
-            logger.info(f"Status of receiver is: {receiver_health}")
-        else:
-            logger.error(f"GET request to '{RECEIVER_URL}' failed with status code {receiver_response.status_code}")
-            receiver_health = "Down"
-            logger.info(f"Status of receiver is: {receiver_health}")
-    except Exception as e:
-        logger.error(f"Error: Did not receive response body from '{RECEIVER_URL}'. Exception {e}")
-        receiver_health = "Down"
-
-
-        # storage
-    try:
-        storage_response = client.get(STORAGE_URL)
-        if storage_response.status_code == 200: # Status code will be 200 if service is running
-            storage_response_data = storage_response.json()
-            storage_health = storage_response_data['status'] # Get status based on response body ("Running" if running)
-            logger.info(f"Status of storage is: {storage_health}")
-        else:
-            logger.error(f"GET request to '{STORAGE_URL}' failed with status code {storage_response.status_code}")
-            storage_health = "Down"
-            logger.info(f"Status of storage is: {storage_health}")
-    except Exception as e:
-        logger.error(f"Error: Did not receive response body from '{STORAGE_URL}'. Exception {e}")
-        storage_health = "Down"
-    
-
-    # New service health values
-    statuses['analyzer'] = analyzer_health
-    statuses['processing'] = processing_health
-    statuses['receiver'] = receiver_health
-    statuses['storage'] = storage_health
     # Update last updated time even if no readings were received
     statuses['last_update'] = current_datetime_str
 
@@ -216,6 +173,7 @@ def populate_statuses():
 
 
 def init_scheduler():
+    ''' Triggers health status updates based on a set interval '''
     sched = BackgroundScheduler(daemon=True)
     # Triggers function for updating services health file (statuses.json) every 20 seconds
     sched.add_job(populate_statuses, 'interval', seconds=app_config['scheduler']['interval'])

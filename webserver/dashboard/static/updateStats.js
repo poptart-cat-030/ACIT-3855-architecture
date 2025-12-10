@@ -10,7 +10,13 @@ const HEALTH_API_URL = "/api/health/statuses"
 // This function fetches and updates the general statistics
 const makeReq = (url, cb) => {
     fetch(url)
-        .then(res => res.json())
+        .then(res => {
+            // Error handling for when my GET request for analyzer when there's no readings (i.e it returns an HTML page like 404 instead of JSON)
+            if (!res.ok) { // if response was unsuccessful (status code not in the 200's)
+                throw new Error(`HTTP ${res.status} from ${url}`)
+            }
+            return res.json()
+        })
         .then((result) => {
             console.log("Received data: ", result)
             cb(result);
